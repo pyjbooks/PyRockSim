@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Quarternion Library
 
@@ -132,7 +133,7 @@ def attitude(roll, pitch, yaw):
     rot_y = np.array([[cos_y, -sin_y, 0.], [sin_y, cos_y, 0.], [0., 0., 1.]])
     rot_p = np.array([[cos_p, 0., sin_p], [0., 1., 0.], [-sin_p, 0., cos_p]])
     rot_r = np.array([[1., 0., 0.], [0, cos_r, -sin_r], [0., sin_r, cos_r]])
-    dcm_bn = rot_y @ rot_p @ rot_r
+    dcm_bn = rot_y.dot(rot_p.dot(rot_r))
 
     c11, c12, c13 = dcm_bn[0, 0], dcm_bn[0, 1], dcm_bn[0, 2]
     c21, c22, c23 = dcm_bn[1, 0], dcm_bn[1, 1], dcm_bn[1, 2]

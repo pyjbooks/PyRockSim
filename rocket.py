@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Rocket simulator
 
@@ -5,6 +6,7 @@ Copyright (c) 2016 Kenji Nakakuki
 Released under the MIT license
 """
 
+from __future__ import print_function
 import numpy as np
 from numpy import sin, cos, arcsin, pi
 import matplotlib as mpl
@@ -82,10 +84,9 @@ class RocketSim:
         # (1) 状態量ベクトルの初期値 x0 の設定
         pos0 = [0.0, 0.0, 0.0]  # m
         vel0 = [0.0, 0.0, 0.0]  # m/s
-        quat0, _ = qt.attitude(kwargs['roll'], kwargs['pitch'],
-                               kwargs['yaw'])
+        quat0, _ = qt.attitude(kwargs['roll'], kwargs['pitch'], kwargs['yaw'])
         omega0 = [0.0, 0.0, 0.0]  # rad/s
-        self.x0 = np.array([kwargs['m0'], *pos0, *vel0, *quat0, *omega0])
+        self.x0 = np.array(self.flatten([[kwargs['m0']], pos0, vel0, quat0, omega0]))
         # (2) ロケットの各種諸元設定
         self.isp = kwargs['Isp']
         self.g0 = kwargs['g0']
@@ -136,11 +137,11 @@ class RocketSim:
         px, py, pz = cc.launch2ecef(x[1], x[2], x[3],
                                     self.xr, self.yr, self.zr)
         phi, lam, _ = cc.ecef2blh(px, py, pz)  # output: deg/deg/m
-        dcm = cc.dcm_x2n(phi, lam) @ self.dcm_x2n_r.T
-
+        dcm = cc.dcm_x2n(phi, lam).dot(self.dcm_x2n_r.T)
+            
         # 大気と重力の計算
         # 大気
-        ned_now = dcm @ np.array([x[1], x[2], x[3]])
+        ned_now = dcm.dot(np.array([x[1], x[2], x[3]]))
         a, _, rho, _ = env.std_atmosphere(-ned_now[2])
         # 重力 (fgh : 水平座標系における機体にかかる重力[N])
         gvec = env.gravity(-ned_now[2], phi * D2R)
@@ -181,7 +182,7 @@ class RocketSim:
             xab = np.array([1, 0, 0])  # 機体座標系速度方向単位ベクトル
             # vab = np.array([0, 0, 0])
         else:
-            vab = cbn.T @ va  # 機体座標系に変換(発射点NED --> 機体座標)
+            vab = cbn.T.dot(va)
             xab = vab / np.linalg.norm(vab)
 
         yab_sintheta = np.cross(xab, np.array([1, 0, 0]))
@@ -203,7 +204,7 @@ class RocketSim:
             np.array([cd, 0, self.cla * theta])
 
         dcm_a2b = np.c_[xab, yab, zab].T  # 転置に注意
-        fab = dcm_a2b @ faa  # ＠は行列積 (Python 3.5以上)
+        fab = dcm_a2b.dot(faa)
 
         # モーメント(mom_t: 推力によるもの[Nm], mom_a:空気力によるもの[Nm])
         if self.lumped_mass == 1:
@@ -215,7 +216,7 @@ class RocketSim:
             raise ValueError('Controller is not yet implemented.')
 
         # 速度運動方程式
-        ftah = cbn @ (ftb + fab)
+        ftah = cbn.dot(ftb + fab)
         delta_v = (1 / x[0]) * (ftah + fgh)  # 発射点NED座標
 
         # 姿勢の運動方程式
@@ -229,8 +230,11 @@ class RocketSim:
                        1 / self.izz * (moment[2] - self.izzdot * x[13] -
                                        (self.iyy - self.ixx) * x[11] * x[12])]
 
-        dx = [delta_m, x[4], x[5], x[6], *delta_v, *delta_quat, *delta_omega]
-        return dx
+        dx = [[delta_m, x[4], x[5], x[6]], delta_v, delta_quat, delta_omega]
+        return self.flatten(dx)
+
+    def flatten(self, z):
+        return [x for y in z for x in y]
 
     def odeint_calc(self, t_vec):
         """ODEソルバーを使ってシミュレーション計算を実行する"""
@@ -262,19 +266,19 @@ def plot_rs(tv, res):
     def plot_pos(t, d):
         """位置のプロット"""
         h = plt.figure(1)
-        h.canvas.set_window_title("Fig %2d - 位置（NED）" % h.number)
+        h.canvas.set_window_title(u"Fig %2d - 位置（NED）" % h.number)
         plt.subplot(3, 1, 1)
         plt.plot(t, d[:, 1] * 1.e-3)
-        plt.xlabel('時間 [s]')
-        plt.ylabel('北方向位置 [km]')
+        plt.xlabel(u'時間 [s]')
+        plt.ylabel(u'北方向位置 [km]')
         plt.subplot(3, 1, 2)
         plt.plot(t, d[:, 2] * 1.e-3)
-        plt.xlabel('時間 [s]')
-        plt.ylabel('東方向位置 [km]')
+        plt.xlabel(u'時間 [s]')
+        plt.ylabel(u'東方向位置 [km]')
         plt.subplot(3, 1, 3)
         plt.plot(t, -d[:, 3] * 1.e-3)
-        plt.xlabel('時間 [s]')
-        plt.ylabel('高度 [km]')
+        plt.xlabel(u'時間 [s]')
+        plt.ylabel(u'高度 [km]')
 
     def plot_vel(t, d):
         """速度のプロット"""
@@ -282,68 +286,68 @@ def plot_rs(tv, res):
         for k in range(len(d)):
             v_abs[k] = np.linalg.norm(d[k, 4:7])
         h = plt.figure(2)
-        h.canvas.set_window_title("Fig %2d - 速度（NED）" % h.number)
+        h.canvas.set_window_title(u"Fig %2d - 速度（NED）" % h.number)
         plt.subplot(4, 1, 1)
         plt.plot(t, d[:, 4])
-        plt.xlabel('時間 [s]')
-        plt.ylabel('速度North [m/s]')
+        plt.xlabel(u'時間 [s]')
+        plt.ylabel(u'速度North [m/s]')
         plt.subplot(4, 1, 2)
         plt.plot(t, d[:, 5])
-        plt.xlabel('時間 [s]')
-        plt.ylabel('速度East [m/s]')
+        plt.xlabel(u'時間 [s]')
+        plt.ylabel(u'速度East [m/s]')
         plt.subplot(4, 1, 3)
         plt.plot(t, -d[:, 6])
-        plt.xlabel('時間 [s]')
-        plt.ylabel('速度Up [m/s]')
+        plt.xlabel(u'時間 [s]')
+        plt.ylabel(u'速度Up [m/s]')
         plt.subplot(4, 1, 4)
         plt.plot(t, v_abs)
-        plt.xlabel('時間 [s]')
-        plt.ylabel('速度絶対値 [m/s]')
+        plt.xlabel(u'時間 [s]')
+        plt.ylabel(u'速度絶対値 [m/s]')
 
     def plot_quat(t, d):
         """Quarternionのプロット"""
         h = plt.figure(3)
-        h.canvas.set_window_title("Fig %2d - Quaternion" % h.number)
+        h.canvas.set_window_title(u"Fig %2d - Quaternion" % h.number)
         plt.subplot(2, 2, 1)
         plt.plot(t, d[:, 7])
-        plt.xlabel('時間 [s]')
-        plt.ylabel('q0')
+        plt.xlabel(u'時間 [s]')
+        plt.ylabel(u'q0')
         plt.subplot(2, 2, 2)
         plt.plot(t, d[:, 8])
-        plt.xlabel('時間 [s]')
-        plt.ylabel('q1')
+        plt.xlabel(u'時間 [s]')
+        plt.ylabel(u'q1')
         plt.subplot(2, 2, 3)
         plt.plot(t, d[:, 9])
-        plt.xlabel('時間 [s]')
-        plt.ylabel('q2')
+        plt.xlabel(u'時間 [s]')
+        plt.ylabel(u'q2')
         plt.subplot(2, 2, 4)
         plt.plot(t, d[:, 10])
-        plt.xlabel('時間 [s]')
-        plt.ylabel('q3')
+        plt.xlabel(u'時間 [s]')
+        plt.ylabel(u'q3')
 
     def plot_rpy(t, d):
         """角速度のプロット"""
         h = plt.figure(4)
-        h.canvas.set_window_title("Fig %2d - 角速度(Roll/Pitch/Yaw)" % h.number)
+        h.canvas.set_window_title(u"Fig %2d - 角速度(Roll/Pitch/Yaw)" % h.number)
         plt.subplot(3, 1, 1)
         plt.plot(t, d[:, 11] * R2D)
-        plt.xlabel('時間 [s]')
-        plt.ylabel('Roll [deg/s]')
+        plt.xlabel(u'時間 [s]')
+        plt.ylabel(u'Roll [deg/s]')
         plt.subplot(3, 1, 2)
         plt.plot(t, d[:, 12] * R2D)
-        plt.xlabel('時間 [s]')
-        plt.ylabel('Pitch [deg/s]')
+        plt.xlabel(u'時間 [s]')
+        plt.ylabel(u'Pitch [deg/s]')
         plt.subplot(3, 1, 3)
         plt.plot(t, d[:, 13] * R2D)
-        plt.xlabel('時間 [s]')
-        plt.ylabel('Yaw [deg/s]')
+        plt.xlabel(u'時間 [s]')
+        plt.ylabel(u'Yaw [deg/s]')
 
     def plot_mass(t, d):
         h = plt.figure(5)
-        h.canvas.set_window_title("Fig %2d - 質量" % h.number)
+        h.canvas.set_window_title(u"Fig %2d - 質量" % h.number)
         plt.plot(t, d[:, 0])
-        plt.xlabel('時間 [s]')
-        plt.ylabel('質量 [kg]')
+        plt.xlabel(u'時間 [s]')
+        plt.ylabel(u'質量 [kg]')
 
     def get_llh(d):
         [xr, yr, zr] = cc.blh2ecef(rocket_settings['lat0'],
@@ -358,23 +362,23 @@ def plot_rs(tv, res):
     def plot_llh(t, llh_in):
         """緯度・経度・高度のプロット"""
         h = plt.figure(6)
-        h.canvas.set_window_title("Fig %2d - 緯度・経度・高度" % h.number)
+        h.canvas.set_window_title(u"Fig %2d - 緯度・経度・高度" % h.number)
         plt.subplot(3, 1, 1)
         plt.plot(t, llh_in[:, 0])
-        plt.xlabel('時間 [s]')
-        plt.ylabel('緯度 [deg]')
+        plt.xlabel(u'時間 [s]')
+        plt.ylabel(u'緯度 [deg]')
         plt.subplot(3, 1, 2)
         plt.plot(t, llh_in[:, 1])
-        plt.xlabel('時間 [s]')
-        plt.ylabel('経度 [deg]')
+        plt.xlabel(u'時間 [s]')
+        plt.ylabel(u'経度 [deg]')
         plt.subplot(3, 1, 3)
         plt.plot(t, llh_in[:, 2] * 1.e-3)
-        plt.xlabel('時間 [s]')
-        plt.ylabel('高度 [km]')
+        plt.xlabel(u'時間 [s]')
+        plt.ylabel(u'高度 [km]')
 
     def plot_map(llh_in):
         h = plt.figure(7, figsize=(8, 8))
-        h.canvas.set_window_title("Fig %2d - 位置（地図）" % h.number)
+        h.canvas.set_window_title(u"Fig %2d - 位置（地図）" % h.number)
         minlon, maxlon = 130, 132.01
         minlat, maxlat = 31, 32.01
         plt.subplot(3, 1, (1, 2))
@@ -388,8 +392,8 @@ def plot_rs(tv, res):
         plt.subplot(3, 1, 3)
         plt.plot(llh_in[:, 1], llh_in[:, 2] * 1.e-3)
         plt.xlim([minlon, maxlon])
-        plt.xlabel('経度 [deg]')
-        plt.ylabel('高度 [km]')
+        plt.xlabel(u'経度 [deg]')
+        plt.ylabel(u'高度 [km]')
 
     # 必要に応じてプロットを作成
     plt.close('all')
