@@ -8,12 +8,19 @@ Rocket Launch Simulater written in Python
 3自由度の質点モデルシミュレータとなっています。水平座標系での飛翔をシミュレーションしますが、プロット時には
 きちんとした高度（楕円体高）に変換することもできます。
 
-## 実行
-Python 3.5の機能を使って書かれていますのでPython 3.5以降を使ってください。
-とはいえ、行列の積の@演算子を使わなければPython 3.4などでも動きます。
-必要なパッケージ類はimport文を見れば分かりますが、NumPy、SciPy、Matplotlib、Basemapが
-必要になります。
+## Requirements
+Python 2 : Version 2.7以上
+Python 3 : Version 3.5以上
+SciPy 0.17.0以上 (interp1dの外挿機能を利用するため)
+NumPy
+Matplotlit
+basemap
+（バージョン指定の無いものは適宜依存関係を満たすバージョン）
 
+Python 3系を使う場合は master ブランチを、
+Python 2系を使う場合は ver2 ブランチを使ってください。
+
+## 実行
 IPythonコンソール（シェル）では以下のように実行してください。
 
 > In [1]: %run rocket.py
@@ -24,9 +31,8 @@ IPythonコンソール（シェル）では以下のように実行してくだ�
 
 
 ## パラメータ設定
-- rocket.pyファイルの中の辞書変数 rocket_settings を変更してください。
-- 抗力係数はRocketSimクラスのcd_rocketメソッドの中のテーブル（リスト）の値を変更してください。
-- 方程式の積分精度はrocket.pyの中のatolおよびrtolを変更してください。
+- 各種設定値はrocket.pyファイルの中の辞書変数 rocket_settings を変更してください。
+- sp.integrate.odeintを使う積分では引数のatolおよびrtolを変更して精度と計算時間を調整できます。
 
 ## 座標系について
 MatRockSimでは局地水平座標系（Local tangent frame）をUEN（Up-East-North）座標で表していますが、
