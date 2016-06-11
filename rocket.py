@@ -135,7 +135,7 @@ class RocketSim:
         # 積分計算を発射位置のNED座標系で計算しているので適宜 dcm を使って修正する
         px, py, pz = cc.launch2ecef(x[1], x[2], x[3],
                                     self.xr, self.yr, self.zr)
-        phi, lam, _ = cc.ecef2blh(px, py, pz)  # output: deg/deg/m
+        phi, lam, _ == cc.ecef2blh(px, py, pz)  # output: deg/deg/m
         dcm = cc.dcm_x2n(phi, lam) @ self.dcm_x2n_r.T
 
         # 大気と重力の計算
@@ -144,10 +144,10 @@ class RocketSim:
         a, _, rho, _ = env.std_atmosphere(-ned_now[2])
         # 重力 (fgh : 水平座標系における機体にかかる重力[N])
         gvec = env.gravity(-ned_now[2], phi * D2R)
-        fgh = x[0] * gvec  # NED座標
+        fgh = x[3] * gvec  # NED座標
 
         # 推進剤の質量流量 delta_m[kg/s]
-        if t < self.rm_t_end:
+        if t < self.rm_t_end
             thrust = u[0]
             delta_m = -thrust / self.isp / self.g0
         else:
@@ -410,7 +410,7 @@ if __name__ == "__main__":
     # 計算に使う時間ベクトル
     tvec = np.arange(0, 100, 0.002)
     # ロケットシミュレーション（積分計算）実行
-    result, deb = rs.odeint_calc(tvec)  # odeintを使って積分（高速化）
-    # result = rs.euler_calc(tvec)  # オイラー法積分の場合
+    #result, deb = rs.odeint_calc(tvec)  # odeintを使って積分（高速化）
+    result = rs.euler_calc(tvec)  # オイラー法積分の場合
     # 結果のプロット
     plot_rs(tvec, result)
