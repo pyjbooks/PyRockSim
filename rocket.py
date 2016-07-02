@@ -10,7 +10,7 @@ from __future__ import print_function
 import numpy as np
 from numpy import sin, cos, arcsin, pi
 import matplotlib as mpl
-import matplotlib.pylab as plt
+import matplotlib.pyplot as plt
 import scipy as sp
 from scipy.interpolate import interp1d
 from mpl_toolkits.basemap import Basemap
