@@ -109,7 +109,7 @@ def gravity(alt, lat):
 # 動作確認用
 if __name__ == '__main__':
     import matplotlib as mpl
-    import matplotlib.pylab as plt
+    import matplotlib.pyplot as plt
 
     # Matplotlibの設定
     plt.style.use('ggplot')
