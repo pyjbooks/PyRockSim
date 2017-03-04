@@ -30,7 +30,7 @@ basemap
 
 とすればインストール可能です。
 
-また、 Windowsの場合、Christoph Gohlkeが公開しているWindows用パッケージ(http://www.lfd.uci.edu/~gohlke/pythonlibs/)を使えばほぼ問題なく使えると思われます。
+また、 Windowsの場合、Christoph Gohlkeが公開しているWindows用パッケージ( http://www.lfd.uci.edu/~gohlke/pythonlibs/ )を使えばほぼ問題なく使えると思われます。
 Christoph GohlkeはWheel形式のパッケージを配布していますので、PythonのバージョンとOSの種類（32bit OS/64bit OS）に対応するWheelをダウンロードして、
 例えば以下のようにインストールします(32bit版 WindowsでPython 3.5を使う場合)。
 
@@ -59,7 +59,7 @@ Christoph GohlkeはWheel形式のパッケージを配布していますので�
 
 ところで、Windowsユーザがbasemapをインストールする方法にはもう一つあります。
 それは、conda（Anacondaのパッケージマネージャ）を使ってインストールする方法です。
-先に述べたように、AnacondaはWindows用のbasemapパッケージを提供していませんが、conda-forge(https://conda-forge.github.io/)
+先に述べたように、AnacondaはWindows用のbasemapパッケージを提供していませんが、conda-forge( https://conda-forge.github.io/ )
 のconda用のパッケージレポジトリに、Windows用（32bit/64bit両方）の
 パッケージが用意されているのです。
 
@@ -70,7 +70,7 @@ Christoph GohlkeはWheel形式のパッケージを配布していますので�
     > conda install -c conda-forge basemap-data-hires
 
 これらを実行するだけで、インストール完了です。ただし、上記のコマンドで「1.0.8.dev0」とあるところは、
-適宜最新のバージョンを指定するといいでしょう。最新のバージョンは、ここ(https://anaconda.org/conda-forge/basemap)で確認できます。
+適宜最新のバージョンを指定するといいでしょう。最新のバージョンは、ここ( https://anaconda.org/conda-forge/basemap )で確認できます。
 
 なお、basemapインストールの際に、conda自体のバージョンが古いものに変わってしまう場合があります。
 他のパッケージの管理に影響すると考えられる場合は、次のようにしてcondaのバージョンを戻してしまいましょう。
