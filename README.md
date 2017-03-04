@@ -23,15 +23,62 @@ basemap
 - WinPython : http://winpython.github.io/
 - Python(x,y) : http://python-xy.github.io/
 
-なお、basemapというパッケージは自分で追加しない限りインストールされていないことが多いかと思います。 2016年5月の時点では、 Linux/OS X用のパッケージがAnacondaに用意されています。LinuxまたはOS Xを利用している方は、
+なお、basemapというパッケージは自分で追加しない限りインストールされていないことが多いかと思います。 2017年2月の時点では、 Linux/OS X用のパッケージがAnaconda（Python 2.7/3.4/3.5/3.6の全てのバージョンでbasemap 1.0.7が使えます）に
+用意されています。LinuxまたはOS Xを利用している方は、
 
- $ conda install basemap
+    $ conda install basemap
 
 とすればインストール可能です。
 
-また、 Windowsの場合、Christoph Gohlkeが公開しているWindows用パッケージ（ http://www.lfd.uci.edu/~gohlke/pythonlibs/ ）を使えばほぼ問題なく使えると思われます。Christoph GohlkeはWheel形式のパッケージを配布していますので、Pythonのバージョンに対応するWheelをダウンロードして、例えば以下のようにインストールします。
+また、 Windowsの場合、Christoph Gohlkeが公開しているWindows用パッケージ(http://www.lfd.uci.edu/~gohlke/pythonlibs/)を使えばほぼ問題なく使えると思われます。
+Christoph GohlkeはWheel形式のパッケージを配布していますので、PythonのバージョンとOSの種類（32bit OS/64bit OS）に対応するWheelをダウンロードして、
+例えば以下のようにインストールします(32bit版 WindowsでPython 3.5を使う場合)。
 
- $ pip install basemap-1.0.8-cp35-none-win32.whl
+    $ pip install basemap-1.0.8-cp35-none-win32.whl
+
+なお、2017年2月時点で最新のAnaconda 4.3.0(Python 3.6版)を使っている場合は、依存関係のあるパッケージも同時にインストールする必要（適切にC/C++コンパイラがインストールされて
+おり、適切に環境設定されていれば、basemapのインストールをpipに指示するだけで、あとはpipが勝手に必要なパッケージをダウンロードして、コンパイル後にインストールしてくれます。
+しかし、下記のように必要なコンパイル済みパッケージを全てダウンロードしてインストールする方がトラブルに遭遇する可能性は低くなります。）が
+あるので、まずChristoph Gohlkeのパッケージから以下の3つのパッケージを取得します。
+
+    pyproj-1.9.5.1-cp36-cp36m-win_amd64.whl
+    pyshp-1.2.10-py2.py3-none-any.whl
+    basemap-1.0.8-cp36-cp36m-win_amd64.whl
+
+これらの3つのwheelパッケージを、pipを使ってインストールしていきます。
+（以下、"Anaconda Prompt"(DOSコマンドプロンプト)のプロンプトを > で表します）
+
+具体的には、3つのwheelパッケージを保存したフォルダにおいて、
+以下の3つのコマンドを実行します。
+
+    > pip install pyproj-1.9.5.1-cp36-cp36m-win_amd64.whl
+    > pip install pyshp-1.2.10-py2.py3-none-any.whl
+    > pip install basemap-1.0.8-cp36-cp36m-win_amd64.whl
+
+以上でインストール終了です。
+
+ところで、Windowsユーザがbasemapをインストールする方法にはもう一つあります。
+それは、conda（Anacondaのパッケージマネージャ）を使ってインストールする方法です。
+先に述べたように、AnacondaはWindows用のbasemapパッケージを提供していませんが、conda-forge(https://conda-forge.github.io/)
+のconda用のパッケージレポジトリに、Windows用（32bit/64bit両方）の
+パッケージが用意されているのです。
+
+具体的には、以下の2つのインストールコマンドを実行します。「-c conda-forge」は、パッケージを「conda-forge」から取得してくる
+ことを意味します。2つ目のコマンドでは、詳細な精度の高い地図データをインストールしています。
+
+    > conda install -c conda-forge basemap=1.0.8.dev0
+    > conda install -c conda-forge basemap-data-hires
+
+これらを実行するだけで、インストール完了です。ただし、上記のコマンドで「1.0.8.dev0」とあるところは、
+適宜最新のバージョンを指定するといいでしょう。最新のバージョンは、ここ(https://anaconda.org/conda-forge/basemap)で確認できます。
+
+なお、basemapインストールの際に、conda自体のバージョンが古いものに変わってしまう場合があります。
+他のパッケージの管理に影響すると考えられる場合は、次のようにしてcondaのバージョンを戻してしまいましょう。
+
+    > conda update conda
+
+これでcondaのバージョンを元に戻しても、basemapの利用上はなんら問題ありません。
+
 
 ## 実行
 IPythonコンソール（シェル）では以下のように実行してください。
@@ -49,6 +96,13 @@ IPythonコンソール（シェル）では以下のように実行してくだ�
 
 ## 座標系について
 MatRockSimでは局地水平座標系（Local tangent frame）をUEN（Up-East-North）座標で表していますが、本プログラムではNED（North-East-Up）座標系にしてあります。それ以外はほぼMatRockSimと同じですのでMatRockSimの"Matlab Rocket Flight Simulator.pdf"を参照してください。
+
+## branches
+
+- master : Python 3用のメインブランチ（Python 3.5以上）
+- pdb_practice : 故意にバグを混入した、デバッグ練習用ブランチ（Python 3.5以上）
+- ver2 : Python 2で動作するように修正したブランチ（Python 2.7以上）
+- unittest : 主要な全関数の単体試験コードを、masterブランチに追加したブランチ（Python 3.5以上）
 
 ## ソースコードの文字コード
 UTF-8としています。したがって、Python 3用のmasterブランチでは、ファイルの1行目にエンコーディング宣言は書かれていません。

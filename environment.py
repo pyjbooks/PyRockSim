@@ -56,27 +56,28 @@ def std_atmosphere(alt):
     # TODO : ATOMOSPHERIC and SPACE FLIGHT DYNAMICSより
     # TODO : Standard ATOMOSPHEREのスクリプトに変更して高度2000kmまで対応にする。
 
-    _k = (ac.hal >= alt).argmax()
+    k = (ac.hal >= alt).argmax()
+
     if ac.hal[0] >= alt:
-        _k = 0
+        k = 0
     elif ac.hal[7] <= alt:
-        _k = 7
-    elif _k >= 1:
-        _k -= 1
+        k = 7
+    elif k >= 1:
+        k -= 1
     else:
         raise ValueError("Index value error")
 
     # 温度
-    temp = ac.t0[_k] + ac.lr[_k] * (alt - ac.hal[_k])
+    temp = ac.t0[k] + ac.lr[k] * (alt - ac.hal[k])
     # 音速
     a = sqrt(temp * ac.gamma * ac.gas_cnst)
     # 圧力
-    if ac.lr[_k] != 0:
-        press = ac.p0[_k] * ((ac.t0[_k] + ac.lr[_k] * (alt - ac.hal[_k])) /
-                             ac.t0[_k]) ** (-ac.g / ac.lr[_k] / ac.gas_cnst)
+    if ac.lr[k] != 0:
+        press = ac.p0[k] * ((ac.t0[k] + ac.lr[k] * (alt - ac.hal[k])) /
+                             ac.t0[k]) ** (-ac.g / ac.lr[k] / ac.gas_cnst)
     else:
-        press = ac.p0[_k] * exp(ac.g / ac.gas_cnst *
-                                (ac.hal[_k] - alt) / ac.t0[_k])
+        press = ac.p0[k] * exp(ac.g / ac.gas_cnst *
+                                (ac.hal[k] - alt) / ac.t0[k])
     # 密度
     rho = press / ac.gas_cnst / temp
     return [a, press, rho, temp]
@@ -118,10 +119,10 @@ if __name__ == '__main__':
     mpl.rcParams['axes.grid'] = True
 
     # 重力計算関数の確認
-    alt_vec = np.arange(0, 200000, 1000)
-    alt_km = alt_vec * 1.e-3  # plot用に単位変換しておく
-    grav = np.zeros((len(alt_vec), 3))
-    for i, h in enumerate(alt_vec):
+    alt = np.arange(0, 200000, 1000)
+    alt_km = alt * 1.e-3  # plot用に単位変換しておく
+    grav = np.zeros((len(alt), 3))
+    for i, h in enumerate(alt):
         grav[i, :] = gravity(h, 35)  # 北緯 35度で計算
 
     # 開いてあるプロットを一端全部閉じる
@@ -146,8 +147,8 @@ if __name__ == '__main__':
     plt.ylim([8, 10])
 
     # 大気計算関数の確認
-    atmos = np.zeros((len(alt_vec), 4))
-    for k, h in enumerate(alt_vec):
+    atmos = np.zeros((len(alt), 4))
+    for k, h in enumerate(alt):
         atmos[k, :] = std_atmosphere(h)
 
     # 標準大気計算結果のプロット
